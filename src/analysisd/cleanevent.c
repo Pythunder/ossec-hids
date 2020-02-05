@@ -45,12 +45,7 @@ int OS_CleanMSG(char *msg, Eventinfo *lf)
     /* Is this from an agent? */
     if ( *msg == '(' )
     {   /* look past '->' for the first ':' */
-        pieces = strstr(msg, "->");
-        if(!pieces) {
-            merror(FORMAT_ERROR, ARGV0);
-            return(-1);
-        }
-        pieces = strchr(pieces, ':');
+        pieces = strchr(strstr(msg, "->"), ':');
         if(!pieces)
         {
             merror(FORMAT_ERROR, ARGV0);
@@ -159,6 +154,17 @@ int OS_CleanMSG(char *msg, Eventinfo *lf)
             (pieces[14] == ':') &&
             (pieces[17] == ':') &&
             (pieces[20] == ' ') && (lf->log += 21)
+        )
+        ||
+        (
+            /* ex: 2019:11:06-00:08:03 */
+            (loglen > 20) &&
+            (isdigit(pieces[0])) &&
+            (pieces[4] == ':') &&
+            (pieces[7] == ':') &&
+            (pieces[10] == '-') &&
+            (pieces[13] == ':') &&
+            (pieces[16] == ':') && (lf->log += 20)
         )
     ) {
         /* Check for an extra space in here */
@@ -329,8 +335,8 @@ int OS_CleanMSG(char *msg, Eventinfo *lf)
                     (pieces[3] == ' ')) {
                 pieces += 4;
 
-                /* Going after the "] " */
-                pieces = strstr(pieces, "] ");
+                /* Going after the ] */
+                pieces = strchr(pieces, ']');
                 if (pieces) {
                     pieces += 2;
                     lf->log = pieces;
